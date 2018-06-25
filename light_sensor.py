@@ -1,40 +1,71 @@
-#!/usr/local/bin/python
+from Adafruit_ADS1x15 import ADS1x15
+from time import sleep
 
+# import needed modules
+import time, signal, sys, os
 import RPi.GPIO as GPIO
-import time
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
-__author__ = 'Gus (Adapted from Adafruit)'
-__license__ = "GPL"
-__maintainer__ = "pimylifeup.com"
+# initialise variables
+delayTime = 0.5 # in Sekunden
 
-GPIO.setmode(GPIO.BOARD)
+# assigning the ADS1x15 ADC
 
-#define the pin that goes to the circuit
-pin_to_circuit = 7
+ADS1015 = 0x00  # 12-bit ADC
+ADS1115 = 0x01  # 16-bit
 
-def rc_time (pin_to_circuit):
-    count = 0
+# choosing the amplifing gain
+gain = 4096  # +/- 4.096V
+# gain = 2048  # +/- 2.048V
+# gain = 1024  # +/- 1.024V
+# gain = 512   # +/- 0.512V
+# gain = 256   # +/- 0.256V
 
-    #Output on the pin for
-    GPIO.setup(pin_to_circuit, GPIO.OUT)
-    GPIO.output(pin_to_circuit, GPIO.LOW)
-    time.sleep(0.1)
+# choosing the sampling rate
+# sps = 8    # 8 Samples per second
+# sps = 16   # 16 Samples per second
+# sps = 32   # 32 Samples per second
+sps = 64   # 64 Samples per second
+# sps = 128  # 128 Samples per second
+# sps = 250  # 250 Samples per second
+# sps = 475  # 475 Samples per second
+# sps = 860  # 860 Samples per second
 
-    #Change the pin back to input
-    GPIO.setup(pin_to_circuit, GPIO.IN)
+# assigning the ADC-Channel (1-4)
+adc_channel_0 = 0    # Channel 0
+adc_channel_1 = 1    # Channel 1
+adc_channel_2 = 2    # Channel 2
+adc_channel_3 = 3    # Channel 3
 
-    #Count until the pin goes high
-    while (GPIO.input(pin_to_circuit) == GPIO.LOW):
-        count += 1
+# initialise ADC (ADS1115)
+adc = ADS1x15(ic=ADS1115)
 
-    return count
+#############################################################################################################
 
-#Catch when script is interupted, cleanup correctly
+# ########
+# Main Loop
+# ########
+# Reading the values from the input pins and print to console
+
 try:
-    # Main loop
-    while True:
-        print rc_time(pin_to_circuit)
+        while True:
+                #read values
+                adc0 = adc.readADCSingleEnded(adc_channel_0, gain, sps)
+                adc1 = adc.readADCSingleEnded(adc_channel_1, gain, sps)
+                adc2 = adc.readADCSingleEnded(adc_channel_2, gain, sps)
+                adc3 = adc.readADCSingleEnded(adc_channel_3, gain, sps)
+
+                # print to console
+                print "Channel 0:", adc0, "mV "
+                print "Channel 1:", adc1, "mV "
+                print "Channel 2:", adc2, "mV "
+                print "Channel 3:", adc3, "mV "
+                print "---------------------------------------"
+
+                time.sleep(delayTime)
+
+
+
 except KeyboardInterrupt:
-    pass
-finally:
-    GPIO.cleanup()
+        GPIO.cleanup()
