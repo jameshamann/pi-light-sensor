@@ -1,7 +1,13 @@
 #!/usr/local/bin/python
 
 import RPi.GPIO as GPIO
-import time
+import time, os
+
+filename = 'light_log'
+file = open(filename,'r')
+st_results = os.stat(filename)
+st_size = st_results[6]
+file.seek(st_size)
 
 __author__ = 'Gus (Adapted from Adafruit)'
 __license__ = "GPL"
@@ -33,6 +39,12 @@ def rc_time (pin_to_circuit):
 try:
     # Main loop
     while True:
+        where = file.tell()
+    line = file.readline()
+    if not line:
+        time.sleep(1)
+        file.seek(where)
+    else:
         print rc_time(pin_to_circuit)
 except KeyboardInterrupt:
     pass
